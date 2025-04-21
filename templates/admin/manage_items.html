@@ -1,0 +1,222 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Manage Items</h4>
+        <span class="badge bg-light text-dark">{{ items|length }} Items</span>
+    </div>
+    <div class="card-body">
+        <!-- Filters -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-secondary">
+                        <h5 class="mb-0">Filters</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="filterStatus" class="form-label">Status</label>
+                                <select class="form-select" id="filterStatus">
+                                    <option value="">All</option>
+                                    <option value="lost">Lost</option>
+                                    <option value="found">Found</option>
+                                    <option value="claimed">Claimed</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="filterCategory" class="form-label">Category</label>
+                                <select class="form-select" id="filterCategory">
+                                    <option value="">All</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.name }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="searchItems" class="form-label">Search</label>
+                                <input type="text" class="form-control" id="searchItems" placeholder="Search items...">
+                            </div>
+                            <div class="col-md-2 mb-3 d-flex align-items-end">
+                                <button class="btn btn-secondary w-100" id="clearFilters">
+                                    <i class="fas fa-times me-2"></i>Clear
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Items Table -->
+        <div class="table-responsive">
+            <table class="table table-hover" id="itemsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Item</th>
+                        <th>Status</th>
+                        <th>Category</th>
+                        <th>Location</th>
+                        <th>Date</th>
+                        <th>Reported On</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr data-item-id="{{ item.id }}" data-item-status="{{ item.status }}" data-item-category="{{ item.category.name }}">
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.name }}</td>
+                        <td>
+                            <span class="badge {% if item.status == 'lost' %}bg-danger{% elif item.status == 'found' %}bg-success{% else %}bg-info{% endif %}">
+                                {{ item.status|capitalize }}
+                            </span>
+                        </td>
+                        <td>{{ item.category.name }}</td>
+                        <td>{{ item.location }}</td>
+                        <td>{{ item.date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ item.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('item_details', item_id=item.id) }}" class="btn btn-outline-secondary" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <button class="btn btn-outline-primary edit-item-btn" title="Edit" data-item-id="{{ item.id }}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-danger delete-item-btn" title="Delete" data-item-id="{{ item.id }}" data-item-name="{{ item.name }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if not items %}
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle me-2"></i>No items found.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Edit Item Modal -->
+<div class="modal fade" id="editItemModal" tabindex="-1" aria-labelledby="editItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editItemModalLabel">Edit Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editItemForm" enctype="multipart/form-data">
+                    <input type="hidden" id="editItemId">
+                    
+                    <div class="row">
+                        <!-- Item Name -->
+                        <div class="col-md-12 mb-3">
+                            <label for="editItemName" class="form-label">Item Name</label>
+                            <input type="text" class="form-control" id="editItemName" name="name" required>
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="col-md-12 mb-3">
+                            <label for="editItemDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="editItemDescription" name="description" rows="3" required></textarea>
+                        </div>
+                        
+                        <!-- Status -->
+                        <div class="col-md-4 mb-3">
+                            <label for="editItemStatus" class="form-label">Status</label>
+                            <select class="form-select" id="editItemStatus" name="status" required>
+                                <option value="lost">Lost</option>
+                                <option value="found">Found</option>
+                                <option value="claimed">Claimed</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Category -->
+                        <div class="col-md-4 mb-3">
+                            <label for="editItemCategory" class="form-label">Category</label>
+                            <select class="form-select" id="editItemCategory" name="category_id" required>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Date -->
+                        <div class="col-md-4 mb-3">
+                            <label for="editItemDate" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="editItemDate" name="date" required>
+                        </div>
+                        
+                        <!-- Location -->
+                        <div class="col-md-12 mb-3">
+                            <label for="editItemLocation" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="editItemLocation" name="location" required>
+                        </div>
+                        
+                        <!-- Contact Info -->
+                        <div class="col-md-12 mb-3">
+                            <label for="editItemContact" class="form-label">Contact Information</label>
+                            <input type="text" class="form-control" id="editItemContact" name="contact_info">
+                        </div>
+                        
+                        <!-- Current Image -->
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Current Image</label>
+                            <div id="currentImageContainer" class="text-center p-3 border rounded">
+                                <img id="currentItemImage" class="img-fluid rounded" style="max-height: 200px;" src="" alt="Current Image">
+                                <div id="noImageText" class="p-5 text-muted">
+                                    <i class="fas fa-image fa-3x mb-3"></i>
+                                    <p>No image available</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- New Image -->
+                        <div class="col-md-12 mb-3">
+                            <label for="editItemImage" class="form-label">Upload New Image (optional)</label>
+                            <input type="file" class="form-control" id="editItemImage" name="item_image" accept="image/*">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveItemBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteItemModal" tabindex="-1" aria-labelledby="deleteItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteItemModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the item "<span id="deleteItemName"></span>"?</p>
+                <p class="text-danger mb-0">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete Item</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

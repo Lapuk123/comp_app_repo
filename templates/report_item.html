@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Report Lost or Found Item</h4>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('report_item') }}" enctype="multipart/form-data" id="reportForm">
+            <div class="row">
+                <!-- Status Selection -->
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Item Status</label>
+                    <div class="d-flex gap-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="status" id="statusLost" value="lost" required checked>
+                            <label class="form-check-label text-danger" for="statusLost">
+                                <i class="fas fa-question-circle me-1"></i>Lost Item
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="status" id="statusFound" value="found">
+                            <label class="form-check-label text-success" for="statusFound">
+                                <i class="fas fa-check-circle me-1"></i>Found Item
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Selection -->
+                <div class="col-md-6 mb-3">
+                    <label for="category" class="form-label">Category</label>
+                    <select class="form-select" id="category" name="category" required>
+                        <option value="" selected disabled>Select a category</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Item Name -->
+                <div class="col-md-12 mb-3">
+                    <label for="item_name" class="form-label">Item Name</label>
+                    <input type="text" class="form-control" id="item_name" name="item_name" required
+                           placeholder="Briefly describe the item (e.g., 'Blue JanSport Backpack')">
+                </div>
+                
+                <!-- Description -->
+                <div class="col-md-12 mb-3">
+                    <label for="description" class="form-label">Detailed Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" required
+                              placeholder="Provide a detailed description of the item, including any identifying features"></textarea>
+                </div>
+                
+                <!-- Location -->
+                <div class="col-md-6 mb-3">
+                    <label for="location" class="form-label">Location</label>
+                    <input type="text" class="form-control" id="location" name="location" required
+                           placeholder="Where was the item lost or found?">
+                </div>
+                
+                <!-- Date -->
+                <div class="col-md-6 mb-3">
+                    <label for="date" class="form-label">Date</label>
+                    <input type="date" class="form-control" id="date" name="date" required
+                           max="{{ now.strftime('%Y-%m-%d') }}">
+                </div>
+                
+                <!-- Contact Info -->
+                <div class="col-md-12 mb-3">
+                    <label for="contact_info" class="form-label">Contact Information (optional)</label>
+                    <input type="text" class="form-control" id="contact_info" name="contact_info"
+                           placeholder="How can someone contact you about this item? (Phone number, etc.)">
+                    <div class="form-text">
+                        Your JRU email will be used as the primary contact method, but you can provide additional contact information.
+                    </div>
+                </div>
+                
+                <!-- Item Image -->
+                <div class="col-md-12 mb-3">
+                    <label for="item_image" class="form-label">Item Image (optional but recommended)</label>
+                    <input type="file" class="form-control" id="item_image" name="item_image" accept="image/*">
+                    <div class="form-text">Upload a clear image of the item to help with identification (max 16MB).</div>
+                    
+                    <!-- Image Preview -->
+                    <div class="mt-2 d-none" id="imagePreviewContainer">
+                        <div class="card">
+                            <div class="card-body p-2">
+                                <img id="imagePreview" class="img-fluid rounded" alt="Image preview">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2 mt-3">
+                <button type="submit" class="btn btn-primary" id="submitButton">
+                    <i class="fas fa-paper-plane me-2"></i>Submit Report
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/report.js') }}"></script>
+{% endblock %}

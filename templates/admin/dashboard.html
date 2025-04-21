@@ -1,0 +1,146 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">Admin Dashboard</h4>
+        <span class="badge bg-light text-dark">{{ total_items }} Total Items</span>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Statistics -->
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card border-primary h-100">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">Users</h6>
+                        <h2 class="display-4">{{ total_users }}</h2>
+                        <p class="card-text">Registered users</p>
+                        <a href="{{ url_for('admin_users') }}" class="btn btn-sm btn-outline-primary">Manage Users</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card border-danger h-100">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">Lost Items</h6>
+                        <h2 class="display-4">{{ lost_items }}</h2>
+                        <p class="card-text">Currently reported</p>
+                        <a href="{{ url_for('search', status='lost') }}" class="btn btn-sm btn-outline-danger">View Lost Items</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card border-success h-100">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">Found Items</h6>
+                        <h2 class="display-4">{{ found_items }}</h2>
+                        <p class="card-text">Waiting to be claimed</p>
+                        <a href="{{ url_for('search', status='found') }}" class="btn btn-sm btn-outline-success">View Found Items</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card border-info h-100">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">Claimed Items</h6>
+                        <h2 class="display-4">{{ claimed_items }}</h2>
+                        <p class="card-text">Successfully returned</p>
+                        <a href="{{ url_for('search', status='claimed') }}" class="btn btn-sm btn-outline-info">View Claimed Items</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Admin Actions -->
+            <div class="col-md-12 mb-4">
+                <div class="card">
+                    <div class="card-header bg-secondary">
+                        <h5 class="mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <a href="{{ url_for('admin_items') }}" class="btn btn-outline-primary d-block">
+                                    <i class="fas fa-clipboard-list me-2"></i>Manage Items
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <a href="{{ url_for('admin_users') }}" class="btn btn-outline-primary d-block">
+                                    <i class="fas fa-users me-2"></i>Manage Users
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <a href="{{ url_for('report_item') }}" class="btn btn-outline-primary d-block">
+                                    <i class="fas fa-plus-circle me-2"></i>Report Item
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <a href="{{ url_for('search') }}" class="btn btn-outline-primary d-block">
+                                    <i class="fas fa-search me-2"></i>Search Items
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Items -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-secondary">
+                        <h5 class="mb-0">Recent Activity</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Status</th>
+                                        <th>Category</th>
+                                        <th>Location</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in recent_items %}
+                                    <tr>
+                                        <td>{{ item.name }}</td>
+                                        <td>
+                                            <span class="badge {% if item.status == 'lost' %}bg-danger{% elif item.status == 'found' %}bg-success{% else %}bg-info{% endif %}">
+                                                {{ item.status|capitalize }}
+                                            </span>
+                                        </td>
+                                        <td>{{ item.category.name }}</td>
+                                        <td>{{ item.location }}</td>
+                                        <td>{{ item.date.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ url_for('item_details', item_id=item.id) }}" class="btn btn-outline-secondary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ url_for('admin_items') }}?edit={{ item.id }}" class="btn btn-outline-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer text-end">
+                        <a href="{{ url_for('admin_items') }}" class="btn btn-sm btn-outline-primary">
+                            View All Items
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

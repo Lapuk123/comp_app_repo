@@ -1,0 +1,144 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Search Lost and Found Items</h4>
+    </div>
+    <div class="card-body">
+        <form id="searchForm">
+            <div class="row">
+                <!-- Search Query -->
+                <div class="col-md-12 mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="searchQuery" name="query" 
+                               placeholder="Search for items by name, description, or location">
+                        <button class="btn btn-primary" type="submit" id="searchBtn">Search</button>
+                    </div>
+                </div>
+                
+                <!-- Filters -->
+                <div class="col-md-12">
+                    <div class="collapse" id="advancedFilters">
+                        <div class="card card-body">
+                            <div class="row">
+                                <!-- Status Filter -->
+                                <div class="col-md-4 mb-3">
+                                    <label for="statusFilter" class="form-label">Status</label>
+                                    <select class="form-select" id="statusFilter" name="status">
+                                        <option value="">All</option>
+                                        <option value="lost">Lost</option>
+                                        <option value="found">Found</option>
+                                        <option value="claimed">Claimed</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Category Filter -->
+                                <div class="col-md-4 mb-3">
+                                    <label for="categoryFilter" class="form-label">Category</label>
+                                    <select class="form-select" id="categoryFilter" name="category">
+                                        <option value="">All Categories</option>
+                                        {% for category in categories %}
+                                            <option value="{{ category.id }}">{{ category.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <!-- Date Range Filter -->
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Date Range</label>
+                                    <div class="input-group input-group-sm mb-2">
+                                        <span class="input-group-text">From</span>
+                                        <input type="date" class="form-control" id="fromDate" name="from_date">
+                                    </div>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">To</span>
+                                        <input type="date" class="form-control" id="toDate" name="to_date">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-2">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" 
+                                data-bs-toggle="collapse" data-bs-target="#advancedFilters" 
+                                aria-expanded="false" aria-controls="advancedFilters" id="filterToggleBtn">
+                            <i class="fas fa-filter me-1"></i><span>Show Filters</span>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary d-none" type="button" id="clearFiltersBtn">
+                            <i class="fas fa-times me-1"></i>Clear Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Search Results -->
+<div class="card">
+    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Search Results</h5>
+        <span id="resultCount" class="badge bg-light text-dark">0 items</span>
+    </div>
+    <div class="card-body">
+        <div id="searchSpinner" class="text-center d-none">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Searching...</p>
+        </div>
+        
+        <div id="noResults" class="alert alert-info text-center">
+            <i class="fas fa-info-circle me-2"></i>Use the search box above to find lost and found items.
+        </div>
+        
+        <div id="resultsContainer" class="d-none">
+            <div class="list-group" id="resultsList"></div>
+            
+            <!-- Template for search result item -->
+            <template id="resultItemTemplate">
+                <a href="#" class="list-group-item list-group-item-action">
+                    <div class="row">
+                        <div class="col-md-2 col-sm-3 mb-2 mb-sm-0">
+                            <div class="item-image-container">
+                                <img src="" alt="Item image" class="img-fluid rounded item-image">
+                                <div class="item-no-image">
+                                    <i class="fas fa-image fa-2x text-muted"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-10 col-sm-9">
+                            <div class="d-flex w-100 justify-content-between align-items-center">
+                                <h5 class="mb-1 item-name"></h5>
+                                <span class="item-status badge"></span>
+                            </div>
+                            <p class="mb-1 item-description"></p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-map-marker-alt me-1"></i><span class="item-location"></span>
+                                    </small>
+                                    <small class="text-muted ms-3">
+                                        <i class="fas fa-calendar me-1"></i><span class="item-date"></span>
+                                    </small>
+                                    <small class="text-muted ms-3">
+                                        <i class="fas fa-tag me-1"></i><span class="item-category"></span>
+                                    </small>
+                                </div>
+                                <small class="text-muted item-time"></small>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </template>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+{% endblock %}
