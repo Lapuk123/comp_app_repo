@@ -11,8 +11,8 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Relationships
-    items = db.relationship('Item', backref='user', lazy=True)
+    # One-to-many relationship with Item
+    items = db.relationship('Item', backref='user', lazy=True, cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<User {self.name}>"
@@ -22,7 +22,7 @@ class Category(db.Model):
     name = db.Column(db.String(50), nullable=False, unique=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relationships
+    # One-to-many relationship with Item
     items = db.relationship('Item', backref='category', lazy=True)
     
     def __repr__(self):
@@ -31,7 +31,7 @@ class Category(db.Model):
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=False)
+    description = db.Column(db.Text(length=65535), nullable=False)  # Using MySQL compatible Text with length
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
     status = db.Column(db.String(20), nullable=False)  # lost, found, claimed
     location = db.Column(db.String(100), nullable=False)

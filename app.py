@@ -8,6 +8,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import uuid
+from config import get_config
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -21,17 +22,8 @@ db = SQLAlchemy(model_class=Base)
 
 # Create the Flask app
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET")
+app.config.from_object(get_config())
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for to generate with https
-
-# Configure the database
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///lostandfound.db")
-app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
-    "pool_recycle": 300,
-    "pool_pre_ping": True,
-}
-app.config["UPLOAD_FOLDER"] = "static/uploads"
-app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB max upload size
 
 # Ensure upload directory exists
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
@@ -459,16 +451,16 @@ def update_item(item_id):
 def delete_item(item_id):
     item = Item.query.get_or_404(item_id)
     
+    # Remove image if exists
+    if item.image:
+        try:
+            image_path = os.path.join(app.config["UPLOAD_FOLDER"], item.image)
+            if os.path.exists(image_path):
+                os.remove(image_path)
+        except Exception as e:
+            app.logger.error(f"Error removing image: {str(e)}")
+    
     try:
-        # Delete associated image if exists
-        if item.image:
-            try:
-                image_path = os.path.join(app.config["UPLOAD_FOLDER"], item.image)
-                if os.path.exists(image_path):
-                    os.remove(image_path)
-            except Exception as e:
-                app.logger.error(f"Error removing image: {str(e)}")
-        
         db.session.delete(item)
         db.session.commit()
         return jsonify({"success": True, "message": "Item deleted successfully"})
@@ -480,6 +472,10 @@ def delete_item(item_id):
 @app.route("/api/user/update/<int:user_id>", methods=["POST"])
 @admin_required
 def update_user(user_id):
+    # Prevent updating the current user to avoid locking out
+    if user_id == session.get("user_id") and request.form.get("is_active") == "false":
+        return jsonify({"success": False, "message": "Cannot deactivate your own account"})
+    
     user = User.query.get_or_404(user_id)
     
     # Update fields
@@ -491,8 +487,6 @@ def update_user(user_id):
         user.user_type = request.form.get("user_type")
     if "is_active" in request.form:
         user.is_active = request.form.get("is_active") == "true"
-    
-    # Update password if provided
     if "password" in request.form and request.form.get("password"):
         user.password_hash = generate_password_hash(request.form.get("password"))
     
@@ -507,13 +501,25 @@ def update_user(user_id):
 @app.route("/api/user/delete/<int:user_id>", methods=["POST"])
 @admin_required
 def delete_user(user_id):
+    # Prevent deleting the current user
+    if user_id == session.get("user_id"):
+        return jsonify({"success": False, "message": "Cannot delete your own account"})
+    
     user = User.query.get_or_404(user_id)
     
-    # Prevent deleting your own account
-    if user.id == session.get("user_id"):
-        return jsonify({"success": False, "message": "You cannot delete your own account"})
-    
     try:
+        # Delete all items associated with this user
+        items = Item.query.filter_by(user_id=user_id).all()
+        for item in items:
+            # Remove image if exists
+            if item.image:
+                try:
+                    image_path = os.path.join(app.config["UPLOAD_FOLDER"], item.image)
+                    if os.path.exists(image_path):
+                        os.remove(image_path)
+                except Exception as e:
+                    app.logger.error(f"Error removing image: {str(e)}")
+        
         db.session.delete(user)
         db.session.commit()
         return jsonify({"success": True, "message": "User deleted successfully"})
@@ -521,6 +527,3 @@ def delete_user(user_id):
         db.session.rollback()
         app.logger.error(f"Error deleting user: {str(e)}")
         return jsonify({"success": False, "message": "Failed to delete user"})
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)

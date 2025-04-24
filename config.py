@@ -6,37 +6,40 @@ class Config:
     SECRET_KEY = os.environ.get("SESSION_SECRET", "development_key")
     DEBUG = True
     
-    # SQLAlchemy settings
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "sqlite:///lostandfound.db")
+    # Database settings
+    # Using MySQL with PyMySQL dialect for connection string
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "mysql+pymysql://username:password@localhost/jru_lostandfound?charset=utf8mb4")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # MySQL specific pool options
     SQLALCHEMY_ENGINE_OPTIONS = {
-        "pool_recycle": 300,
-        "pool_pre_ping": True,
+        "pool_recycle": 280,  # Recycle connections before MySQL's default 8 hour timeout
+        "pool_pre_ping": True,  # Verify connections before use
+        "pool_size": 10,  # Default pool size
+        "max_overflow": 20  # Allow up to 20 connections over pool_size
     }
     
-    # File upload settings
+    # Upload settings
     UPLOAD_FOLDER = "static/uploads"
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max upload size
     
-    # App settings
+    # Application specific settings
     JRU_DOMAIN = "jru.edu"  # For email validation
-    
+
+
 class DevelopmentConfig(Config):
     """Development configuration."""
     DEBUG = True
 
+
 class ProductionConfig(Config):
     """Production configuration."""
     DEBUG = False
-    
-# Choose the appropriate config based on environment
-config = {
-    "development": DevelopmentConfig,
-    "production": ProductionConfig,
-    "default": DevelopmentConfig
-}
+
 
 def get_config():
     """Return the appropriate configuration object based on environment."""
     env = os.environ.get("FLASK_ENV", "development")
-    return config.get(env, config["default"])
+    if env == "production":
+        return ProductionConfig()
+    return DevelopmentConfig()

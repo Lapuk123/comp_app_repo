@@ -1,8 +1,7 @@
 import os
-import uuid
-from datetime import datetime
 from werkzeug.utils import secure_filename
-from flask import current_app as app
+import uuid
+from app import app
 
 def allowed_file(filename):
     """Check if the file extension is allowed"""
@@ -24,19 +23,16 @@ def save_image(file):
 
 def format_date(date):
     """Format a date to a readable string"""
-    if isinstance(date, str):
-        try:
-            date = datetime.strptime(date, "%Y-%m-%d").date()
-        except ValueError:
-            return date
-    
-    return date.strftime("%B %d, %Y") if date else ""
+    if not date:
+        return ""
+    return date.strftime("%B %d, %Y")
 
 def get_status_badge_class(status):
     """Get the Bootstrap badge class for a status"""
-    status_classes = {
-        "lost": "badge bg-danger",
-        "found": "badge bg-success",
-        "claimed": "badge bg-info"
-    }
-    return status_classes.get(status.lower(), "badge bg-secondary")
+    if status == "lost":
+        return "bg-danger"
+    elif status == "found":
+        return "bg-success"
+    elif status == "claimed":
+        return "bg-info"
+    return "bg-secondary"

@@ -1,8 +1,8 @@
-modules = ["python-3.11"]
+modules = ["python-3.11", "postgresql-16"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["openssl", "postgresql"]
+packages = ["libmysqlclient", "openssl", "postgresql"]
 
 [deployment]
 deploymentTarget = "autoscale"
