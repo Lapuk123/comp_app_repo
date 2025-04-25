@@ -407,7 +407,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('editUserName').value = cells[1].textContent;
         document.getElementById('editUserEmail').value = cells[2].textContent;
         document.getElementById('editUserType').value = userRow.getAttribute('data-user-type');
-        document.getElementById('editUserActive').checked = userRow.getAttribute('data-user-active') === 'True';
+        const activeValue = userRow.getAttribute('data-user-active');
+        document.getElementById('editUserActive').checked = activeValue === 'True' || activeValue === 'true' || activeValue === true;
         document.getElementById('editUserPassword').value = '';
         
         // Show the modal
@@ -530,7 +531,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const rowUserType = row.getAttribute('data-user-type');
-            const rowIsActive = row.getAttribute('data-user-active') === 'True';
+            const activeValue = row.getAttribute('data-user-active');
+            const rowIsActive = activeValue === 'True' || activeValue === 'true' || activeValue === true;
             const userName = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
             const userEmail = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
             

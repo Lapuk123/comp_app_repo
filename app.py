@@ -41,34 +41,47 @@ with app.app_context():
     from models import User, Item, Category
     db.create_all()
     
-    # Create default admin if not exists
-    admin = User.query.filter_by(email="admin@my.jru.edu").first()
-    if not admin:
-        admin = User(
-            name="System Administrator",
-            email="admin@my.jru.edu",
-            password_hash=generate_password_hash("admin123"),
-            user_type="admin",
-            is_active=True
-        )
-        db.session.add(admin)
-        db.session.commit()
-    
-    # Add default categories if they don't exist
-    categories = [
-        "Electronics", "Books/Notes", "Clothing", "Accessories", 
-        "ID/Cards", "Keys", "Bags", "Others"
-    ]
-    for cat_name in categories:
-        if not Category.query.filter_by(name=cat_name).first():
+    try:
+        # Create default admin if not exists
+        admin = User.query.filter_by(email="admin@my.jru.edu").first()
+        if not admin:
+            admin = User(
+                name="System Administrator",
+                email="admin@my.jru.edu",
+                password_hash=generate_password_hash("admin123"),
+                user_type="admin",
+                is_active=True
+            )
+            db.session.add(admin)
+            db.session.commit()
+        
+        # Add default categories if they don't exist
+        categories = [
+            "Electronics", "Books/Notes", "Clothing", "Accessories", 
+            "ID/Cards", "Keys", "Bags", "Others"
+        ]
+        
+        # First check all categories
+        categories_to_add = []
+        for cat_name in categories:
+            existing_category = Category.query.filter_by(name=cat_name).first()
+            if not existing_category:
+                categories_to_add.append(cat_name)
+        
+        # Then add them in a separate loop
+        for cat_name in categories_to_add:
             category = Category(name=cat_name)
             db.session.add(category)
-    
-    # Commit any new categories
-    try:
-        db.session.commit()
+            # Commit each category individually to avoid losing all if one fails
+            try:
+                db.session.commit()
+                app.logger.info(f"Added category: {cat_name}")
+            except Exception as e:
+                app.logger.error(f"Error adding category '{cat_name}': {str(e)}")
+                db.session.rollback()
+                
     except Exception as e:
-        app.logger.error(f"Error creating categories: {str(e)}")
+        app.logger.error(f"Error during initialization: {str(e)}")
         db.session.rollback()
 
 # Helper functions
