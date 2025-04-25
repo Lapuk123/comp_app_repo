@@ -104,14 +104,18 @@ def allowed_file(filename):
 
 def save_image(file):
     """Save an uploaded image and return the filename"""
-    if file and allowed_file(file.filename):
+    if file and file.filename and allowed_file(file.filename):
         # Create a unique filename
         filename = secure_filename(file.filename)
         ext = filename.rsplit('.', 1)[1].lower()
         unique_filename = f"{uuid.uuid4().hex}.{ext}"
         
+        # Ensure upload directory exists
+        os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+        
         file_path = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
         file.save(file_path)
+        app.logger.info(f"Saved image to {file_path}")
         return unique_filename
     return None
 
@@ -367,6 +371,34 @@ def item_details(item_id):
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+
+@app.route("/item/<int:item_id>/claim")
+@login_required
+def mark_as_claimed(item_id):
+    item = Item.query.get_or_404(item_id)
+    
+    # Check if user is authorized (admin or reporter of the item)
+    if session.get("user_id") != item.user_id and session.get("user_type") != "admin":
+        flash("You are not authorized to mark this item as claimed", "danger")
+        return redirect(url_for("item_details", item_id=item_id))
+    
+    # Check if already claimed
+    if item.status == "claimed":
+        flash("This item has already been claimed", "info")
+        return redirect(url_for("item_details", item_id=item_id))
+    
+    # Update status to claimed
+    item.status = "claimed"
+    
+    try:
+        db.session.commit()
+        flash("Item has been marked as claimed", "success")
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error marking item as claimed: {str(e)}")
+        flash("An error occurred. Please try again.", "danger")
+    
+    return redirect(url_for("item_details", item_id=item_id))
 
 # Admin routes
 @app.route("/admin/dashboard")
