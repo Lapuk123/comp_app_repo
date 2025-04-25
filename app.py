@@ -42,27 +42,34 @@ with app.app_context():
     db.create_all()
     
     # Create default admin if not exists
-    admin = User.query.filter_by(email="admin@jru.edu").first()
+    admin = User.query.filter_by(email="admin@my.jru.edu").first()
     if not admin:
         admin = User(
             name="System Administrator",
-            email="admin@jru.edu",
+            email="admin@my.jru.edu",
             password_hash=generate_password_hash("admin123"),
             user_type="admin",
             is_active=True
         )
         db.session.add(admin)
-        
-        # Add default categories
-        categories = [
-            "Electronics", "Books/Notes", "Clothing", "Accessories", 
-            "ID/Cards", "Keys", "Bags", "Others"
-        ]
-        for cat_name in categories:
+        db.session.commit()
+    
+    # Add default categories if they don't exist
+    categories = [
+        "Electronics", "Books/Notes", "Clothing", "Accessories", 
+        "ID/Cards", "Keys", "Bags", "Others"
+    ]
+    for cat_name in categories:
+        if not Category.query.filter_by(name=cat_name).first():
             category = Category(name=cat_name)
             db.session.add(category)
-            
+    
+    # Commit any new categories
+    try:
         db.session.commit()
+    except Exception as e:
+        app.logger.error(f"Error creating categories: {str(e)}")
+        db.session.rollback()
 
 # Helper functions
 def login_required(f):
@@ -183,8 +190,8 @@ def register():
             return redirect(url_for("register"))
         
         # Validate email domain for JRU
-        if not email.endswith("@jru.edu"):
-            flash("Please use your JRU email address", "danger")
+        if not email.endswith("@my.jru.edu"):
+            flash("Please use your JRU email address (@my.jru.edu)", "danger")
             return redirect(url_for("register"))
         
         # Check if passwords match

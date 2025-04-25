@@ -7,16 +7,14 @@ class Config:
     DEBUG = True
     
     # Database settings
-    # Using MySQL with PyMySQL dialect for connection string
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "mysql+pymysql://username:password@localhost/jru_lostandfound?charset=utf8mb4")
+    # Using PostgreSQL as the default database
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # MySQL specific pool options
+    # Database pool options
     SQLALCHEMY_ENGINE_OPTIONS = {
-        "pool_recycle": 280,  # Recycle connections before MySQL's default 8 hour timeout
+        "pool_recycle": 300,  # Recycle connections 
         "pool_pre_ping": True,  # Verify connections before use
-        "pool_size": 10,  # Default pool size
-        "max_overflow": 20  # Allow up to 20 connections over pool_size
     }
     
     # Upload settings
@@ -24,7 +22,7 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max upload size
     
     # Application specific settings
-    JRU_DOMAIN = "jru.edu"  # For email validation
+    JRU_DOMAIN = "my.jru.edu"  # For email validation
 
 
 class DevelopmentConfig(Config):
