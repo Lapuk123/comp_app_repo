@@ -387,18 +387,41 @@ def mark_as_claimed(item_id):
         flash("This item has already been claimed", "info")
         return redirect(url_for("item_details", item_id=item_id))
     
-    # Update status to claimed
-    item.status = "claimed"
-    
-    try:
-        db.session.commit()
-        flash("Item has been marked as claimed", "success")
-    except Exception as e:
-        db.session.rollback()
-        app.logger.error(f"Error marking item as claimed: {str(e)}")
-        flash("An error occurred. Please try again.", "danger")
-    
-    return redirect(url_for("item_details", item_id=item_id))
+    # If it's a found item, delete it completely
+    if item.status == "found":
+        # Remove image if exists
+        if item.image:
+            try:
+                image_path = os.path.join(app.config["UPLOAD_FOLDER"], item.image)
+                if os.path.exists(image_path):
+                    os.remove(image_path)
+                    app.logger.info(f"Deleted image: {image_path}")
+            except Exception as e:
+                app.logger.error(f"Error removing image: {str(e)}")
+        
+        try:
+            db.session.delete(item)
+            db.session.commit()
+            flash("Item has been marked as claimed and removed from the system", "success")
+            return redirect(url_for("index"))
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error deleting claimed item: {str(e)}")
+            flash("An error occurred. Please try again.", "danger")
+            return redirect(url_for("item_details", item_id=item_id))
+    else:
+        # For lost items, just update the status to claimed
+        item.status = "claimed"
+        
+        try:
+            db.session.commit()
+            flash("Item has been marked as claimed", "success")
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error marking item as claimed: {str(e)}")
+            flash("An error occurred. Please try again.", "danger")
+        
+        return redirect(url_for("item_details", item_id=item_id))
 
 # Admin routes
 @app.route("/admin/dashboard")
