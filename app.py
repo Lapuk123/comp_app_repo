@@ -61,21 +61,17 @@ with app.app_context():
             "ID/Cards", "Keys", "Bags", "Others"
         ]
         
-        # First check all categories
-        categories_to_add = []
+        # MySQL doesn't have ON CONFLICT, so we use the ORM approach with explicit checks
         for cat_name in categories:
-            existing_category = Category.query.filter_by(name=cat_name).first()
-            if not existing_category:
-                categories_to_add.append(cat_name)
-        
-        # Then add them in a separate loop
-        for cat_name in categories_to_add:
-            category = Category(name=cat_name)
-            db.session.add(category)
-            # Commit each category individually to avoid losing all if one fails
             try:
-                db.session.commit()
-                app.logger.info(f"Added category: {cat_name}")
+                # Check if category exists first 
+                existing = Category.query.filter_by(name=cat_name).first()
+                if not existing:
+                    # Insert the category if it doesn't exist
+                    category = Category(name=cat_name)
+                    db.session.add(category)
+                    db.session.commit()
+                    app.logger.info(f"Added category: {cat_name}")
             except Exception as e:
                 app.logger.error(f"Error adding category '{cat_name}': {str(e)}")
                 db.session.rollback()
