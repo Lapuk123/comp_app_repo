@@ -20,9 +20,9 @@
                         <label for="email" class="form-label">JRU Email Address</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your JRU email" required>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your JRU email (@my.jru.edu)" required>
                         </div>
-                        <div class="form-text">Must be a valid JRU email address (example@jru.edu)</div>
+                        <div class="form-text">Must be a valid JRU email address (example@my.jru.edu)</div>
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
@@ -98,8 +98,8 @@
     // Check if email is a JRU email
     function checkEmail() {
         const email = emailInput.value;
-        if (email && !email.toLowerCase().endsWith('@jru.edu')) {
-            emailInput.setCustomValidity("Please use your JRU email address (ending with @jru.edu)");
+        if (email && !email.toLowerCase().endsWith('@my.jru.edu')) {
+            emailInput.setCustomValidity("Please use your JRU email address (ending with @my.jru.edu)");
             return false;
         } else {
             emailInput.setCustomValidity('');
