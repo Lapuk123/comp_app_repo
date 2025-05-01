@@ -124,6 +124,7 @@ def save_image(file):
         
         file_path = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
         file.save(file_path)
+        app.logger.info(f"Checking if file exists: {os.path.exists(file_path)}")
         app.logger.info(f"Saved image to {file_path}")
         return unique_filename
     return None
@@ -372,13 +373,26 @@ def api_search():
 @app.route("/item/<int:item_id>")
 def item_details(item_id):
     item = Item.query.get_or_404(item_id)
-    category = Category.query.get(item.category_id)
-    user = User.query.get(item.user_id)
-    
+    category = Category.query.get(item.category_id) if item.category_id else None
+    user = User.query.get(item.user_id) if item.user_id else None
+    # Robust error handling for missing related objects
+    if not category:
+        flash("Category information is missing for this item.", "warning")
+    if not user:
+        flash("User information is missing for this item.", "warning")
+    # Ensure item.date is a datetime object (if not, try to parse)
+    if hasattr(item, 'date') and not isinstance(item.date, datetime):
+        try:
+            item.date = datetime.strptime(str(item.date), "%Y-%m-%d")
+        except Exception:
+            item.date = datetime.now()
     return render_template("item_details.html", item=item, category=category, user=user)
 
 @app.route("/uploads/<filename>")
 def uploaded_file(filename):
+    app.logger.info(f"Requested image: {filename}")
+    app.logger.info(f"Upload folder: {app.config['UPLOAD_FOLDER']}")
+    app.logger.info(f"Full path: {os.path.join(app.config['UPLOAD_FOLDER'], filename)}")
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
 @app.route("/item/<int:item_id>/claim")
@@ -598,3 +612,7 @@ def delete_user(user_id):
         db.session.rollback()
         app.logger.error(f"Error deleting user: {str(e)}")
         return jsonify({"success": False, "message": "Failed to delete user"})
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)

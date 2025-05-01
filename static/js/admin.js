@@ -105,12 +105,17 @@ document.addEventListener('DOMContentLoaded', function() {
             button.addEventListener('click', function() {
                 const userId = this.getAttribute('data-user-id');
                 const userName = this.getAttribute('data-user-name');
-                
-                document.getElementById('deleteUserName').textContent = userName;
-                confirmDeleteUserBtn.setAttribute('data-user-id', userId);
-                
-                const modal = new bootstrap.Modal(deleteUserModal);
-                modal.show();
+                // Show confirmation dialog before showing modal
+                if (confirm('Are you sure you want to delete this user?')) {
+                    document.getElementById('deleteUserName').textContent = userName;
+                    confirmDeleteUserBtn.setAttribute('data-user-id', userId);
+                    if (deleteUserModal instanceof HTMLElement) {
+                        const modal = new bootstrap.Modal(deleteUserModal);
+                        modal.show();
+                    } else {
+                        console.error('deleteUserModal is not a valid HTMLElement:', deleteUserModal);
+                    }
+                }
             });
         });
         
@@ -641,20 +646,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Utility function: querySelector with :contains (for text content search)
 // Used for finding elements containing specific text
-Element.prototype.querySelector = function(query) {
-    if (query.includes(':contains(') && query.includes(')')) {
-        const parts = query.split(':contains(');
-        const selector = parts[0];
-        const text = parts[1].slice(0, -1);
+// Element.prototype.querySelector = function(query) {
+//     if (query.includes(':contains(') && query.includes(')')) {
+//         const parts = query.split(':contains(');
+//         const selector = parts[0];
+//         const text = parts[1].slice(0, -1);
         
-        const elements = this.querySelectorAll(selector);
-        for (const element of elements) {
-            if (element.textContent.includes(text)) {
-                return element;
-            }
-        }
-        return null;
-    }
-    
-    return Document.prototype.querySelector.call(this, query);
-};
+//         const elements = this.querySelectorAll(selector);
+//         for (const element of elements) {
+//             if (element.textContent.includes(text)) {
+//                 return element;
+//             }
+//         }
+//         return null;
+//     }
+//     
+//     return Document.prototype.querySelector.call(this, query);
+// };

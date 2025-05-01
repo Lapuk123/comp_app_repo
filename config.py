@@ -1,4 +1,6 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 class Config:
     """Base configuration class."""
@@ -7,8 +9,9 @@ class Config:
     DEBUG = True
     
     # Database settings
-    # Using PostgreSQL as the default database
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL")
+    # Using MySQL as the default database (update the URI as needed)
+    # Example: mysql+pymysql://username:password@localhost/dbname
+    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "mysql+pymysql://user:password@localhost/dbname")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Database pool options
@@ -18,7 +21,7 @@ class Config:
     }
     
     # Upload settings
-    UPLOAD_FOLDER = "static/uploads"
+    UPLOAD_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), "static/uploads")
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max upload size
     
     # Application specific settings

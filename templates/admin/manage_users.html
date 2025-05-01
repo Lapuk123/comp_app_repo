@@ -80,7 +80,7 @@
                         <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-primary edit-user-btn" title="Edit" data-user-id="{{ user.id }}">
+                                <button class="btn btn-outline-primary edit-user-btn" title="Edit" data-user-id="{{ user.id }}" data-user-name="{{ user.name }}">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 {% if user.id != session.get('user_id') %}

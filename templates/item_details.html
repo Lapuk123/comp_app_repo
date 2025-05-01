@@ -16,7 +16,7 @@
             <div class="col-md-4 mb-3 mb-md-0">
                 {% if item.image %}
                     <img src="{{ url_for('uploaded_file', filename=item.image) }}" 
-                         alt="{{ item.name }}" class="img-fluid rounded">
+                         alt="{{ item.name }}" class="img-fluid rounded" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/no-image.png') }}';">
                 {% else %}
                     <div class="text-center p-5 bg-secondary bg-opacity-25 rounded">
                         <i class="fas fa-image fa-5x text-muted"></i>

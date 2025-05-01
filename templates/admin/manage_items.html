@@ -114,26 +114,26 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="editItemForm" enctype="multipart/form-data">
-                    <input type="hidden" id="editItemId">
+                <form id="editItemForm" enctype="multipart/form-data" autocomplete="off">
+                    <input type="hidden" id="editItemId" name="id">
                     
                     <div class="row">
                         <!-- Item Name -->
                         <div class="col-md-12 mb-3">
                             <label for="editItemName" class="form-label">Item Name</label>
-                            <input type="text" class="form-control" id="editItemName" name="name" required>
+                            <input type="text" class="form-control" id="editItemName" name="name" required autocomplete="name">
                         </div>
                         
                         <!-- Description -->
                         <div class="col-md-12 mb-3">
                             <label for="editItemDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="editItemDescription" name="description" rows="3" required></textarea>
+                            <textarea class="form-control" id="editItemDescription" name="description" rows="3" required autocomplete="off"></textarea>
                         </div>
                         
                         <!-- Status -->
                         <div class="col-md-4 mb-3">
                             <label for="editItemStatus" class="form-label">Status</label>
-                            <select class="form-select" id="editItemStatus" name="status" required>
+                            <select class="form-select" id="editItemStatus" name="status" required autocomplete="off">
                                 <option value="lost">Lost</option>
                                 <option value="found">Found</option>
                                 <option value="claimed">Claimed</option>
@@ -143,7 +143,7 @@
                         <!-- Category -->
                         <div class="col-md-4 mb-3">
                             <label for="editItemCategory" class="form-label">Category</label>
-                            <select class="form-select" id="editItemCategory" name="category_id" required>
+                            <select class="form-select" id="editItemCategory" name="category_id" required autocomplete="off">
                                 {% for category in categories %}
                                     <option value="{{ category.id }}">{{ category.name }}</option>
                                 {% endfor %}
@@ -153,19 +153,19 @@
                         <!-- Date -->
                         <div class="col-md-4 mb-3">
                             <label for="editItemDate" class="form-label">Date</label>
-                            <input type="date" class="form-control" id="editItemDate" name="date" required>
+                            <input type="date" class="form-control" id="editItemDate" name="date" required autocomplete="off">
                         </div>
                         
                         <!-- Location -->
                         <div class="col-md-12 mb-3">
                             <label for="editItemLocation" class="form-label">Location</label>
-                            <input type="text" class="form-control" id="editItemLocation" name="location" required>
+                            <input type="text" class="form-control" id="editItemLocation" name="location" required autocomplete="off">
                         </div>
                         
                         <!-- Contact Info -->
                         <div class="col-md-12 mb-3">
                             <label for="editItemContact" class="form-label">Contact Information</label>
-                            <input type="text" class="form-control" id="editItemContact" name="contact_info">
+                            <input type="text" class="form-control" id="editItemContact" name="contact_info" autocomplete="tel">
                         </div>
                         
                         <!-- Current Image -->
@@ -183,7 +183,7 @@
                         <!-- New Image -->
                         <div class="col-md-12 mb-3">
                             <label for="editItemImage" class="form-label">Upload New Image (optional)</label>
-                            <input type="file" class="form-control" id="editItemImage" name="item_image" accept="image/*">
+                            <input type="file" class="form-control" id="editItemImage" name="item_image" accept="image/*" autocomplete="off">
                         </div>
                     </div>
                 </form>
