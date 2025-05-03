@@ -31,7 +31,7 @@ class Category(db.Model):
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text(length=65535), nullable=False)  # Using MySQL compatible Text with length
+    description = db.Column(db.Text, nullable=False)  # Using MySQL compatible Text with length
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
     status = db.Column(db.String(20), nullable=False)  # lost, found, claimed
     location = db.Column(db.String(100), nullable=False)
